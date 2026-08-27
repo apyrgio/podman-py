@@ -16,7 +16,6 @@
 
 import logging
 import os
-import shutil
 import subprocess
 import threading
 from contextlib import suppress
@@ -48,7 +47,6 @@ class PodmanLauncher:
         self.socket_file: str = socket_uri.replace('unix://', '')
         self.log_level = log_level
 
-        self.proc: Optional[subprocess.Popen[bytes]] = None
         self.reference_id = hash(time.monotonic())
 
         logger.setLevel(logging.getLevelName(log_level))
@@ -85,7 +83,9 @@ class PodmanLauncher:
             self.reference_id,
         )
 
-        threading.Thread(target=consume_lines, args=[self.proc.stdout, consume]).start()
+        threading.Thread(
+            target=consume_lines, args=[self.podman.proc_service.stdout, consume]
+        ).start()
 
         if not check_socket:
             return
@@ -95,7 +95,7 @@ class PodmanLauncher:
 
     def stop(self) -> None:
         """stop podman service"""
-        if not self.proc:
+        if not self.podman.proc_service:
             return
 
         return_code = self.podman.stop_service(timeout=15)
