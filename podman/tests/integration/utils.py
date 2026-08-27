@@ -71,6 +71,7 @@ class PodmanLauncher:
 
         self.podman.start_service(
             self.socket_uri,
+            time=self.timeout,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
